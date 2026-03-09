@@ -1,0 +1,64 @@
+name: Update Calendars
+
+on:
+  schedule:
+    # 05:00 UTC = 06:00 CET (UTC+1, Spain winter time).
+    # During summer (CEST, UTC+2) this fires at 07:00 local time — GitHub
+    # Actions cron does not support named timezones.
+    - cron: '0 5 * * *'
+  # Allow a manual run from the Actions tab at any time.
+  workflow_dispatch:
+
+jobs:
+  update:
+    name: Regenerate ICS files
+    runs-on: ubuntu-latest
+
+    # Write access is required so the bot can push the updated .ics files.
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      # Cache the PaddleOCR / PaddleX model weights so they are not
+      # re-downloaded (~200 MB+) on every daily run.
+      - name: Cache PaddleOCR models
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.paddleocr
+            ~/.paddlex
+          key: paddleocr-models-${{ runner.os }}
+
+      - name: Install all project dependencies
+        run: uv sync
+
+      - name: Generate calendars
+        env:
+          UMA_USERNAME: ${{ secrets.UMA_USERNAME }}
+          UMA_PASSWORD: ${{ secrets.UMA_PASSWORD }}
+        run: uv run main.py
+
+      - name: Commit & push updated calendars
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add calendars/
+          if git diff --cached --quiet; then
+            echo "No calendar changes — nothing to commit."
+          else
+            git commit -m "chore: update calendars $(date -u '+%Y-%m-%d %H:%M UTC')"
+            git push
+          fi

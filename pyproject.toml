@@ -1,0 +1,38 @@
+[project]
+name = "calendarcreator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "icalendar>=7.0.3",
+    "requests>=2.32.5",
+    "beautifulsoup4>=4.14.3",
+    "lxml>=6.0.2",
+    "python-dotenv>=1.2.2",
+    "paddlex[ocr]>=3.4.2",
+    "paddlepaddle>=3.3.0",
+    "paddleocr[doc-parser]>=3.4.0",
+    "pdfplumber>=0.11.9",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.11.0",
+    "pyright>=1.1.0",
+]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B"]
+
+[tool.pyright]
+pythonVersion = "3.13"
+typeCheckingMode = "basic"
+# Heavy ML deps (paddleocr, paddlepaddle, paddlex) are not installed in CI;
+# suppress missing-import errors so type-checking still catches our own mistakes.
+reportMissingImports = "none"
+reportMissingModuleSource = "none"

@@ -1,0 +1,22 @@
+# Secrets & session cache
+.env
+cookies.json
+
+# Downloaded planning artifacts (fetched at runtime)
+planning.png
+saw_planning.pdf
+teamup.ics
+
+# Generated calendar output
+calendars/
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv

@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # -----------------------------------------------------------------------
+  # Lint + format check (ruff only — no heavy ML deps needed)
+  # -----------------------------------------------------------------------
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Install dev dependencies
+        # Only install the dev group (ruff + pyright) — skips the multi-GB
+        # PaddleOCR/PaddlePaddle packages that are unsuitable for CI runners.
+        run: uv sync --only-group dev
+
+      - name: Ruff — lint
+        run: uv run ruff check .
+
+      - name: Ruff — format check
+        run: uv run ruff format --check .
+
+  # -----------------------------------------------------------------------
+  # Static type checking (pyright)
+  # -----------------------------------------------------------------------
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Install dev dependencies
+        run: uv sync --only-group dev
+
+      - name: Pyright
+        run: uv run pyright
+
+  # -----------------------------------------------------------------------
+  # Tests (placeholder — add pytest to the dev group and write tests to
+  # enable this job)
+  # -----------------------------------------------------------------------
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    if: false  # remove this line once tests exist
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: .python-version
+
+      - name: Install dev dependencies
+        run: uv sync --only-group dev
+
+      - name: Run tests
+        run: uv run pytest
