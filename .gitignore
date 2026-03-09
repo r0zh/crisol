@@ -7,9 +7,6 @@ planning.png
 saw_planning.pdf
 teamup.ics
 
-# Generated calendar output
-calendars/
-
 # Python-generated files
 __pycache__/
 *.py[oc]
