@@ -3,12 +3,12 @@ Fetch the planning image from the UMA virtual campus course page.
 
 Strategy:
   - Find a .no-overflow div whose text contains "PLANIFICACIÓN PROPUESTA".
-  - Within it, grab the first <img> whose src contains "planning" (case-insensitive).
+  - Within it, grab the first content image.  The filename changes when the
+    teacher uploads revised planning images, so do not depend on it.
   - Download the image bytes via the authenticated session.
 """
 
 import logging
-import re
 from pathlib import Path
 
 import requests
@@ -25,7 +25,7 @@ def _find_iss_planning_img_url(html: str, page_url: str) -> str:
     """
     ISS-specific: parse *html* from the ISS Moodle course page and return the
     absolute URL of the planning image (a .no-overflow div containing
-    "PLANIFICACIÓN" with an <img src=*planning*>).
+    "PLANIFICACIÓN" with an <img>).
 
     Raises ValueError if the image cannot be located.
     """
@@ -38,10 +38,7 @@ def _find_iss_planning_img_url(html: str, page_url: str) -> str:
         if "PLANIFICACI" not in text.upper():  # covers Ó / O variants
             continue
 
-        img: Tag | None = div.find(
-            "img",
-            src=re.compile(r"planning", re.IGNORECASE),
-        )
+        img: Tag | None = div.find("img", src=True)
         if img is None:
             continue
 
